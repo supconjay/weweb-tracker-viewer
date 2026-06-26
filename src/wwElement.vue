@@ -393,8 +393,20 @@ export default {
       const url = this.str(this.fieldVal(t, this.content.recordLinkField, ["url", "link", "href", "path"]));
       this.$emit("trigger-event", { name: "openRecord", event: { id: this.trackerId(t) || "", url, tracker: t || {} } });
     },
+    attType(att) { return (att && (att.content_type || att.contentType || att.type)) || ""; },
     emitPhoto(group, index, p) {
-      this.$emit("trigger-event", { name: "photoClick", event: { group, index, url: this.photoUrl(p), photo: p || {} } });
+      this.$emit("trigger-event", {
+        name: "photoClick",
+        event: {
+          group,
+          index,
+          url: this.photoUrl(p),
+          type: this.attType(p),
+          filename: this.attName(p),
+          isImage: this.isImage(p),
+          photo: p || {},
+        },
+      });
     },
     emitAddActivity() {
       const t = this.selectedTracker;
@@ -405,7 +417,8 @@ export default {
         name: "attachmentClick",
         event: {
           url: (att && att.url) || "",
-          type: (att && (att.content_type || att.contentType || att.type)) || "",
+          type: this.attType(att),
+          filename: this.attName(att),
           isImage: this.isImage(att),
           attachment: att || null,
         },

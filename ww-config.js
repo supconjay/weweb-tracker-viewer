@@ -6,6 +6,7 @@ export default {
     { name: "photoClick", label: { en: "On photo click" }, event: { group: "after", index: 0, url: "", type: "", filename: "", isImage: true, photo: {} } },
     { name: "attachmentClick", label: { en: "On activity attachment click" }, event: { url: "", type: "", filename: "", isImage: false, attachment: {} } },
     { name: "addActivity", label: { en: "On add-to-activity click" }, event: { id: "", tracker: {} } },
+    { name: "activityPageChange", label: { en: "On activity page change" }, event: { page: 1 } },
   ],
   properties: {
     title: { label: { en: "Header label" }, type: "Text", defaultValue: "Link a Work Order", bindable: true },
@@ -94,6 +95,8 @@ export default {
     activityLabelText: { label: { en: "Activity label" }, type: "Text", defaultValue: "Activity", bindable: true },
     showAddActivity: { label: { en: "Show add-to-activity button" }, type: "OnOff", defaultValue: true, bindable: true },
     addActivityLabel: { label: { en: "Add-to-activity label" }, type: "Text", defaultValue: "Add", bindable: true },
+    paginateActivity: { label: { en: "Paginate activity (built-in)" }, type: "OnOff", defaultValue: true, bindable: true },
+    activityPageSize: { label: { en: "Activity items per page" }, type: "Number", options: { min: 1, max: 100, step: 1 }, defaultValue: 5, bindable: true },
     showRecordLink: { label: { en: "Show open-record link" }, type: "OnOff", defaultValue: true, bindable: true },
     recordLinkLabel: { label: { en: "Open-record label" }, type: "Text", defaultValue: "Open record", bindable: true },
 

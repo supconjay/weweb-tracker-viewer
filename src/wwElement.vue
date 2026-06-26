@@ -139,7 +139,7 @@
             </button>
           </div>
           <ul v-if="activityItems.length" class="pp-feed">
-            <li v-for="(f, i) in activityItems" :key="i" class="pp-feeditem" :class="{ 'pp-feeditem--last': i === activityItems.length - 1 }">
+            <li v-for="(f, i) in pagedActivity" :key="actPageOffset + i" class="pp-feeditem" :class="{ 'pp-feeditem--last': i === pagedActivity.length - 1 }">
               <span class="pp-feeditem__avatar">
                 <img v-if="avatarUrl(f)" :src="avatarUrl(f)" :alt="authorName(f)" />
                 <template v-else>{{ initials(authorName(f)) }}</template>
@@ -178,6 +178,16 @@
             </li>
           </ul>
           <div v-else class="pp-feed__empty">{{ emptyText }}</div>
+
+          <div v-if="actPaginationActive" class="pp-pager">
+            <button class="pp-pager__btn" type="button" :disabled="actPage <= 1" aria-label="Previous page" @click="goActPage(actPage - 1)">
+              <svg class="pp-svg" v-bind="svgAttrs"><path :d="ic('chevron-left')"></path></svg>
+            </button>
+            <span class="pp-pager__info">Page {{ actPage }} of {{ actTotalPages }}</span>
+            <button class="pp-pager__btn" type="button" :disabled="actPage >= actTotalPages" aria-label="Next page" @click="goActPage(actPage + 1)">
+              <svg class="pp-svg" v-bind="svgAttrs"><path :d="ic('chevron-right')"></path></svg>
+            </button>
+          </div>
         </section>
       </div>
     </div>
@@ -196,6 +206,8 @@ const ICONS = {
   file: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6",
   rss: "M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16M5 19a1 1 0 1 0 0-2 1 1 0 0 0 0 2z",
   plus: "M12 5v14M5 12h14",
+  "chevron-left": "M15 18l-6-6 6-6",
+  "chevron-right": "M9 18l6-6-6-6",
 };
 
 export default {
@@ -206,11 +218,17 @@ export default {
       open: false,
       search: "",
       selId: this.content.selectedId != null && this.content.selectedId !== "" ? String(this.content.selectedId) : null,
+      actPage: 1,
     };
   },
   watch: {
     "content.selectedId"(v) {
       this.selId = v != null && v !== "" ? String(v) : null;
+    },
+    selId() { this.actPage = 1; },
+    activityCount(n) {
+      const tp = Math.max(1, Math.ceil(n / this.actPageSize));
+      if (this.actPage > tp) this.actPage = tp;
     },
   },
   computed: {
@@ -249,6 +267,15 @@ export default {
       if (Array.isArray(raw)) return raw;
       if (raw && typeof raw === "object" && Array.isArray(raw.data)) return raw.data;
       return [];
+    },
+    activityCount() { return this.activityItems.length; },
+    actPageSize() { const n = Number(this.content.activityPageSize); return n > 0 ? Math.floor(n) : 5; },
+    actTotalPages() { return Math.max(1, Math.ceil(this.activityCount / this.actPageSize)); },
+    actPaginationActive() { return this.content.paginateActivity !== false && this.actTotalPages > 1; },
+    actPageOffset() { return this.content.paginateActivity !== false ? (this.actPage - 1) * this.actPageSize : 0; },
+    pagedActivity() {
+      if (this.content.paginateActivity === false) return this.activityItems;
+      return this.activityItems.slice(this.actPageOffset, this.actPageOffset + this.actPageSize);
     },
     showEmpty() { return this.content.showEmptyValues !== false; },
     emptyText() { return this.content.emptyText != null && this.content.emptyText !== "" ? this.content.emptyText : "None"; },
@@ -412,6 +439,12 @@ export default {
       const t = this.selectedTracker;
       this.$emit("trigger-event", { name: "addActivity", event: { id: this.trackerId(t) || "", tracker: t || {} } });
     },
+    goActPage(p) {
+      const next = Math.max(1, Math.min(this.actTotalPages, p));
+      if (next === this.actPage) return;
+      this.actPage = next;
+      this.$emit("trigger-event", { name: "activityPageChange", event: { page: next } });
+    },
     emitAtt(att) {
       this.$emit("trigger-event", {
         name: "attachmentClick",
@@ -536,6 +569,13 @@ export default {
 .pp-feeditem__text :deep(p) { margin: 0; }
 .pp-feeditem__text :deep(a) { color: var(--info); }
 .pp-feed__empty { color: var(--text-subtle); font-size: 13px; padding: 4px 0 2px; }
+
+.pp-pager { display: flex; align-items: center; justify-content: center; gap: 14px; padding-top: 14px; margin-top: 6px; border-top: 1px solid var(--border); }
+.pp-pager__btn { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface); color: var(--text-muted); cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+.pp-pager__btn:hover:not(:disabled) { background: var(--surface-3); color: var(--text); border-color: var(--border-strong); }
+.pp-pager__btn:disabled { opacity: .4; cursor: default; }
+.pp-pager__btn .pp-svg { width: 16px; height: 16px; }
+.pp-pager__info { font-size: 13px; font-weight: 600; color: var(--text-muted); min-width: 96px; text-align: center; }
 
 .pp-atts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .pp-att { text-decoration: none; cursor: pointer; font-family: inherit; padding: 0; border: none; }

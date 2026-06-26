@@ -60,68 +60,70 @@
       <!-- Selected tracker body -->
       <div v-else class="pp-body">
         <div
-          v-if="content.showStatus !== false && statusText"
+          v-if="content.showStatus !== false && (statusText || showEmpty)"
           class="pp-status"
-          :class="'pp-status--' + statusTone(statusText)"
+          :class="'pp-status--' + (statusText ? statusTone(statusText) : 'neutral')"
         >
           <svg class="pp-svg" v-bind="svgAttrs"><path :d="ic('clock')"></path></svg>
-          <span>{{ statusText }}</span>
+          <span>{{ statusText || emptyText }}</span>
         </div>
 
         <!-- Description -->
-        <section v-if="content.showDescription !== false && descriptionText" class="pp-block">
+        <section v-if="content.showDescription !== false && (descriptionText || showEmpty)" class="pp-block">
           <h4 v-if="content.descriptionLabel" class="pp-block__title">{{ content.descriptionLabel }}</h4>
-          <div v-if="content.descriptionHtml" class="pp-desc pp-desc--html" v-html="descriptionText"></div>
-          <p v-else class="pp-desc">{{ descriptionText }}</p>
+          <div v-if="descriptionText && content.descriptionHtml" class="pp-desc pp-desc--html" v-html="descriptionText"></div>
+          <p v-else class="pp-desc" :class="{ 'pp-desc--none': !descriptionText }">{{ descriptionText || emptyText }}</p>
         </section>
 
         <!-- Notes -->
-        <section v-if="content.showNotes !== false && notesText" class="pp-block">
+        <section v-if="content.showNotes !== false && (notesText || showEmpty)" class="pp-block">
           <h4 v-if="content.notesLabel" class="pp-block__title">{{ content.notesLabel }}</h4>
-          <div v-if="content.notesHtml" class="pp-desc pp-desc--html" v-html="notesText"></div>
-          <p v-else class="pp-desc">{{ notesText }}</p>
+          <div v-if="notesText && content.notesHtml" class="pp-desc pp-desc--html" v-html="notesText"></div>
+          <p v-else class="pp-desc" :class="{ 'pp-desc--none': !notesText }">{{ notesText || emptyText }}</p>
         </section>
 
         <!-- Labor / Material -->
-        <section v-if="content.showFinancials !== false && (laborVal !== '' || materialVal !== '')" class="pp-stats">
-          <div v-if="laborVal !== ''" class="pp-stat">
+        <section v-if="content.showFinancials !== false && (laborVal !== '' || materialVal !== '' || showEmpty)" class="pp-stats">
+          <div v-if="laborVal !== '' || showEmpty" class="pp-stat">
             <span class="pp-stat__ico"><svg class="pp-svg" v-bind="svgAttrs"><path :d="ic('dollar')"></path></svg></span>
             <span class="pp-stat__label">{{ content.laborLabel }}</span>
-            <span class="pp-stat__value">{{ money(laborVal) }}</span>
+            <span class="pp-stat__value" :class="{ 'pp-stat__value--none': laborVal === '' }">{{ laborVal !== '' ? money(laborVal) : emptyText }}</span>
           </div>
-          <div v-if="materialVal !== ''" class="pp-stat">
+          <div v-if="materialVal !== '' || showEmpty" class="pp-stat">
             <span class="pp-stat__ico"><svg class="pp-svg" v-bind="svgAttrs"><path :d="ic('dollar')"></path></svg></span>
             <span class="pp-stat__label">{{ content.materialLabel }}</span>
-            <span class="pp-stat__value">{{ money(materialVal) }}</span>
+            <span class="pp-stat__value" :class="{ 'pp-stat__value--none': materialVal === '' }">{{ materialVal !== '' ? money(materialVal) : emptyText }}</span>
           </div>
         </section>
 
         <!-- Completion photos -->
-        <section v-if="content.showAfter !== false && afterPhotos.length" class="pp-block">
+        <section v-if="content.showAfter !== false && (afterPhotos.length || showEmpty)" class="pp-block">
           <h4 class="pp-block__title">
             <svg class="pp-svg pp-block__ico" v-bind="svgAttrs"><path :d="ic('image')"></path></svg>
             {{ content.afterLabel }} <span class="pp-count">{{ afterPhotos.length }}</span>
           </h4>
-          <div class="pp-thumbs">
+          <div v-if="afterPhotos.length" class="pp-thumbs">
             <button v-for="(p, i) in afterPhotos" :key="'a' + i" type="button" class="pp-thumb" @click="emitPhoto('after', i, p)">
               <img v-if="photoThumb(p)" :src="photoThumb(p)" :alt="content.afterLabel + ' ' + (i + 1)" />
               <svg v-else class="pp-svg" v-bind="svgAttrs"><path :d="ic('image')"></path></svg>
             </button>
           </div>
+          <p v-else class="pp-desc pp-desc--none">{{ emptyText }}</p>
         </section>
 
         <!-- Before photos -->
-        <section v-if="content.showBefore !== false && beforePhotos.length" class="pp-block">
+        <section v-if="content.showBefore !== false && (beforePhotos.length || showEmpty)" class="pp-block">
           <h4 class="pp-block__title">
             <svg class="pp-svg pp-block__ico" v-bind="svgAttrs"><path :d="ic('image')"></path></svg>
             {{ content.beforeLabel }} <span class="pp-count">{{ beforePhotos.length }}</span>
           </h4>
-          <div class="pp-thumbs">
+          <div v-if="beforePhotos.length" class="pp-thumbs">
             <button v-for="(p, i) in beforePhotos" :key="'b' + i" type="button" class="pp-thumb" @click="emitPhoto('before', i, p)">
               <img v-if="photoThumb(p)" :src="photoThumb(p)" :alt="content.beforeLabel + ' ' + (i + 1)" />
               <svg v-else class="pp-svg" v-bind="svgAttrs"><path :d="ic('image')"></path></svg>
             </button>
           </div>
+          <p v-else class="pp-desc pp-desc--none">{{ emptyText }}</p>
         </section>
 
         <!-- Activity feed -->
@@ -175,7 +177,7 @@
               </div>
             </li>
           </ul>
-          <div v-else class="pp-feed__empty">No activity yet</div>
+          <div v-else class="pp-feed__empty">{{ emptyText }}</div>
         </section>
       </div>
     </div>
@@ -248,6 +250,8 @@ export default {
       if (raw && typeof raw === "object" && Array.isArray(raw.data)) return raw.data;
       return [];
     },
+    showEmpty() { return this.content.showEmptyValues !== false; },
+    emptyText() { return this.content.emptyText != null && this.content.emptyText !== "" ? this.content.emptyText : "None"; },
     svgAttrs() {
       return { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linecap": "round", "stroke-linejoin": "round", "aria-hidden": "true" };
     },
@@ -304,11 +308,25 @@ export default {
       if (arr && typeof arr === "object" && Array.isArray(arr.data)) return arr.data;
       return [];
     },
-    photoThumb(p) {
-      if (!p) return "";
-      if (typeof p === "string") return p;
-      return p.thumbnail_url || p.thumbnailUrl || p.thumbnail || p.url || p.src || p.image || "";
+    // Prefer a lightweight thumbnail (Airtable `thumbnails.{small,large,full}.url`)
+    // over the heavy original `url`. Returns "" only if nothing usable exists.
+    thumbUrl(obj) {
+      if (!obj) return "";
+      if (typeof obj === "string") return obj;
+      const t = obj.thumbnails;
+      if (t && typeof t === "object") {
+        const size = this.content.thumbnailSize || "large";
+        const order = size === "small" ? ["small", "large", "full"]
+          : size === "full" ? ["full", "large", "small"]
+          : ["large", "small", "full"];
+        for (let i = 0; i < order.length; i++) {
+          const k = order[i];
+          if (t[k] && t[k].url) return t[k].url;
+        }
+      }
+      return obj.thumbnail_url || obj.thumbnailUrl || obj.thumbnail || obj.url || obj.src || obj.image || "";
     },
+    photoThumb(p) { return this.thumbUrl(p); },
     photoUrl(p) {
       if (!p) return "";
       if (typeof p === "string") return p;
@@ -344,10 +362,7 @@ export default {
       const u = (att.url || att || "").toString().toLowerCase();
       return /\.(png|jpe?g|gif|webp|svg|bmp)(\?|$)/.test(u);
     },
-    attThumb(att) {
-      if (!att) return "";
-      return att.thumbnail_url || att.thumbnailUrl || att.url || "";
-    },
+    attThumb(att) { return this.thumbUrl(att); },
     attName(att) {
       if (!att) return "File";
       if (att.name || att.filename) return att.name || att.filename;
@@ -471,6 +486,8 @@ export default {
 .pp-block__ico { width: 16px; height: 16px; color: var(--text-muted); }
 .pp-count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--surface-3); color: var(--text-muted); font-size: 11.5px; font-weight: 700; }
 .pp-desc { margin: 0; color: var(--text-muted); font-size: 13.5px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.pp-desc--none { color: var(--text-subtle); font-style: italic; }
+.pp-stat__value--none { color: var(--text-subtle); font-weight: 600; font-style: italic; }
 .pp-desc--html :deep(p) { margin: 0 0 6px; }
 .pp-desc--html :deep(a) { color: var(--info); }
 .pp-desc--html :deep(ul), .pp-desc--html :deep(ol) { margin: 4px 0; padding-left: 18px; }

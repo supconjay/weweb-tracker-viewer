@@ -97,6 +97,18 @@ export default {
     showRecordLink: { label: { en: "Show open-record link" }, type: "OnOff", defaultValue: true, bindable: true },
     recordLinkLabel: { label: { en: "Open-record label" }, type: "Text", defaultValue: "Open record", bindable: true },
 
+    // ---- Empty + thumbnails ----
+    showEmptyValues: { label: { en: "Show empty fields as placeholder" }, type: "OnOff", defaultValue: true, bindable: true },
+    emptyText: { label: { en: "Empty placeholder text" }, type: "Text", defaultValue: "None", bindable: true },
+    thumbnailSize: {
+      label: { en: "Thumbnail size (Airtable)" }, type: "TextSelect",
+      options: { options: [
+        { value: "small", label: { en: "Small" } },
+        { value: "large", label: { en: "Large" } },
+        { value: "full", label: { en: "Full" } },
+      ] }, defaultValue: "large", bindable: true,
+    },
+
     // ---- Theme (standard across pp- components) ----
     primaryColor: { label: { en: "Primary color" }, type: "Color", defaultValue: "#10b981", bindable: true },
     accentColor: { label: { en: "Accent color" }, type: "Color", defaultValue: "#6366f1", bindable: true },

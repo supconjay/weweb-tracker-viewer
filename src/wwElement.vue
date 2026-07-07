@@ -422,6 +422,10 @@ export default {
     },
     attType(att) { return (att && (att.content_type || att.contentType || att.type)) || ""; },
     emitPhoto(group, index, p) {
+      // `photos` is the FULL attachment array for the clicked group, so it can be
+      // bound straight to the Attachment Viewer (attachments: event.photos,
+      // startIndex: event.index).
+      const photos = group === "before" ? this.beforePhotos : this.afterPhotos;
       this.$emit("trigger-event", {
         name: "photoClick",
         event: {
@@ -432,6 +436,7 @@ export default {
           filename: this.attName(p),
           isImage: this.isImage(p),
           photo: p || {},
+          photos: Array.isArray(photos) ? photos.slice() : [],
         },
       });
     },

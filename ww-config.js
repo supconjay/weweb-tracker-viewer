@@ -3,7 +3,7 @@ export default {
   triggerEvents: [
     { name: "select", label: { en: "On work order selected" }, event: { id: "", index: 0, tracker: {} } },
     { name: "openRecord", label: { en: "On open record click" }, event: { id: "", url: "", tracker: {} } },
-    { name: "photoClick", label: { en: "On photo click" }, event: { group: "after", index: 0, url: "", type: "", filename: "", isImage: true, photo: {} } },
+    { name: "photoClick", label: { en: "On photo click" }, event: { group: "after", index: 0, url: "", type: "", filename: "", isImage: true, photo: {}, photos: [] } },
     { name: "attachmentClick", label: { en: "On activity attachment click" }, event: { url: "", type: "", filename: "", isImage: false, attachment: {} } },
     { name: "addActivity", label: { en: "On add-to-activity click" }, event: { id: "", tracker: {} } },
     { name: "activityPageChange", label: { en: "On activity page change" }, event: { page: 1 } },
